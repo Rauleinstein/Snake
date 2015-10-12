@@ -52,46 +52,111 @@ namespace SnakeMess
 
 	class SnakeMain
 	{
+        static bool gameOver, pause, inUse;
+        static Direction dir;
+        static int boardWidth, boardHeight;
+        static List<Coord> snake;
+        static Random rand;
+        static Coord egg;
+        static Coord tail;
+        static Coord head;
+        static Coord newH;
+
+        /**
+            function Init with the initialization of all the main variables
+        */
+        public void Init() 
+        {
+            gameOver = false;
+            pause = false;
+            inUse = false;
+            dir = new Direction();
+            dir.newDir = 2;
+            dir.lastDir = 2;
+            boardWidth = Console.WindowWidth;
+            boardHeight = Console.WindowHeight;
+            snake = new List<Coord>();
+            for(int i = 0; i<4; i++) {
+                snake.Add(new Coord(10, 10));
+            }
+
+            Console.CursorVisible = false;
+            Console.Title = "Westerdals Oslo ACT - SNAKE";
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.SetCursorPosition(10, 10);
+            Console.Write("@");
+            rand = new Random();
+            egg = new Coord();
+            while (true) {
+                egg.X = rand.Next(0, boardWidth);
+                egg.Y = rand.Next(0, boardHeight);
+                bool spot = true;
+                foreach (Coord i in snake)
+                    if (i.X == egg.X && i.Y == egg.Y) {
+                        spot = false;
+                        break;
+                    }
+                if (spot) {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.SetCursorPosition(egg.X, egg.Y);
+                    Console.Write("$");
+                    break;
+                }
+            }
+        }
+        public bool death() {
+            if (newH.X < 0 || newH.X >= boardWidth)
+                return true;
+            else if (newH.Y < 0 || newH.Y >= boardHeight)
+                return true;
+            if (newH.X == egg.X && newH.Y == egg.Y) {
+                if (snake.Count + 1 >= boardWidth * boardHeight)
+                    // No more room to place eggs -- game over.
+                    return true;
+                else {
+                    while (true) {
+                        egg.X = rand.Next(0, boardWidth); egg.Y = rand.Next(0, boardHeight);
+                        bool found = true;
+                        foreach (Coord i in snake)
+                            if (i.X == egg.X && i.Y == egg.Y) {
+                                found = false;
+                                break;
+                            }
+                        if (found) {
+                            inUse = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!inUse) {
+                snake.RemoveAt(0);
+                foreach (Coord x in snake) {
+                    if (x.X == newH.X && x.Y == newH.Y) {
+                        // Death by accidental self-cannibalism.
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
 		public static void Main(string[] arguments)
 		{
-            //Variables in mainClass
-			bool gg = false, pause = false, inUse = false;
-            Direction dir = new Direction();
-            short newDir = 2; // 0 = up, 1 = right, 2 = down, 3 = left 
-            short last = newDir;
-			int boardW = Console.WindowWidth, boardH = Console.WindowHeight;
-			Random rng = new Random();
-			Coord app = new Coord();
-			List<Coord> snake = new List<Coord>();
-			snake.Add(new Coord(10, 10)); snake.Add(new Coord(10, 10)); snake.Add(new Coord(10, 10)); snake.Add(new Coord(10, 10));
-			Console.CursorVisible = false;
-			Console.Title = "Westerdals Oslo ACT - SNAKE";
-			Console.ForegroundColor = ConsoleColor.Green; Console.SetCursorPosition(10, 10); Console.Write("@");
-			while (true) {
-				app.X = rng.Next(0, boardW); app.Y = rng.Next(0, boardH);
-				bool spot = true;
-				foreach (Coord i in snake)
-					if (i.X == app.X && i.Y == app.Y) {
-						spot = false;
-						break;
-					}
-				if (spot) {
-					Console.ForegroundColor = ConsoleColor.Green; Console.SetCursorPosition(app.X, app.Y); Console.Write("$");
-					break;
-				}
-			}
+            SnakeMain snakemain = new SnakeMain();
+            snakemain.Init();
+            //Variables 
 			Stopwatch t = new Stopwatch();
 			t.Start();
-			while (!gg) {
-                newDir = dir.getNewDir(ref gg, ref pause);
+			while (!gameOver) {
+                dir.newDir = dir.getNewDir(ref gameOver, ref pause);
 				if (!pause) {
 					if (t.ElapsedMilliseconds < 100)
 						continue;
 					t.Restart();
-					Coord tail = new Coord(snake.First());
-					Coord head = new Coord(snake.Last());
-					Coord newH = new Coord(head);
-					switch (newDir) {
+					tail = new Coord(snake.First());
+					head = new Coord(snake.Last());
+					newH = new Coord(head);
+					switch (dir.newDir) {
 						case 0:
 							newH.Y -= 1;
 							break;
@@ -105,52 +170,25 @@ namespace SnakeMess
 							newH.X -= 1;
 							break;
 					}
-					if (newH.X < 0 || newH.X >= boardW)
-						gg = true;
-					else if (newH.Y < 0 || newH.Y >= boardH)
-						gg = true;
-					if (newH.X == app.X && newH.Y == app.Y) {
-						if (snake.Count + 1 >= boardW * boardH)
-							// No more room to place apples -- game over.
-							gg = true;
-						else {
-							while (true) {
-								app.X = rng.Next(0, boardW); app.Y = rng.Next(0, boardH);
-								bool found = true;
-								foreach (Coord i in snake)
-									if (i.X == app.X && i.Y == app.Y) {
-										found = false;
-										break;
-									}
-								if (found) {
-									inUse = true;
-									break;
-								}
-							}
-						}
-					}
-					if (!inUse) {
-						snake.RemoveAt(0);
-                        foreach (Coord x in snake) {
-                            if (x.X == newH.X && x.Y == newH.Y) {
-                                // Death by accidental self-cannibalism.
-                                gg = true;
-                                break;
-                            }
-                        }
-					}
-					if (!gg) {
+                    gameOver = snakemain.death();
+					if (!gameOver) {
 						Console.ForegroundColor = ConsoleColor.Yellow;
-						Console.SetCursorPosition(head.X, head.Y); Console.Write("0");
+						Console.SetCursorPosition(head.X, head.Y);
+                        Console.Write("0");
 						if (!inUse) {
-							Console.SetCursorPosition(tail.X, tail.Y); Console.Write(" ");
+							Console.SetCursorPosition(tail.X, tail.Y);
+                            Console.Write(" ");
 						} else {
-							Console.ForegroundColor = ConsoleColor.Green; Console.SetCursorPosition(app.X, app.Y); Console.Write("$");
+							Console.ForegroundColor = ConsoleColor.Green;
+                            Console.SetCursorPosition(egg.X, egg.Y);
+                            Console.Write("$");
 							inUse = false;
 						}
 						snake.Add(newH);
-						Console.ForegroundColor = ConsoleColor.Yellow; Console.SetCursorPosition(newH.X, newH.Y); Console.Write("@");
-						dir.lastDir = newDir;
+						Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.SetCursorPosition(newH.X, newH.Y);
+                        Console.Write("@");
+						dir.lastDir = dir.newDir;
 					}
 				}
 			}
