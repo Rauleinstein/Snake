@@ -52,15 +52,15 @@ namespace SnakeMess
 
 	class SnakeMain
 	{
-        static bool gameOver, pause, inUse;
-        static Direction dir;
-        static int boardWidth, boardHeight;
-        static List<Coord> snake;
-        static Random rand;
-        static Coord egg;
-        static Coord tail;
-        static Coord head;
-        static Coord newH;
+        static bool gameOver, pause, inUse; //SnakeMain
+        static Direction dir;  //Snake
+        static int boardWidth, boardHeight; //GameWindow
+        static List<Coord> snake; //Snake
+        static Random rand; //SnakeMain
+        static Coord egg;  //SnakeMain
+        static Coord tail; //Snake
+        static Coord head; //Snake
+        static Coord newHead; //Snake
 
         /**
             function Init with the initialization of all the main variables
@@ -105,11 +105,11 @@ namespace SnakeMess
             }
         }
         public bool death() {
-            if (newH.X < 0 || newH.X >= boardWidth)
+            if (newHead.X < 0 || newHead.X >= boardWidth)
                 return true;
-            else if (newH.Y < 0 || newH.Y >= boardHeight)
+            else if (newHead.Y < 0 || newHead.Y >= boardHeight)
                 return true;
-            if (newH.X == egg.X && newH.Y == egg.Y) {
+            if (newHead.X == egg.X && newHead.Y == egg.Y) {
                 if (snake.Count + 1 >= boardWidth * boardHeight)
                     // No more room to place eggs -- game over.
                     return true;
@@ -132,7 +132,7 @@ namespace SnakeMess
             if (!inUse) {
                 snake.RemoveAt(0);
                 foreach (Coord x in snake) {
-                    if (x.X == newH.X && x.Y == newH.Y) {
+                    if (x.X == newHead.X && x.Y == newHead.Y) {
                         // Death by accidental self-cannibalism.
                         return true;
                     }
@@ -155,19 +155,19 @@ namespace SnakeMess
 					t.Restart();
 					tail = new Coord(snake.First());
 					head = new Coord(snake.Last());
-					newH = new Coord(head);
+					newHead = new Coord(head);
 					switch (dir.newDir) {
 						case 0:
-							newH.Y -= 1;
+							newHead.Y -= 1;
 							break;
 						case 1:
-							newH.X += 1;
+							newHead.X += 1;
 							break;
 						case 2:
-							newH.Y += 1;
+							newHead.Y += 1;
 							break;
 						default:
-							newH.X -= 1;
+							newHead.X -= 1;
 							break;
 					}
                     gameOver = snakemain.death();
@@ -184,9 +184,9 @@ namespace SnakeMess
                             Console.Write("$");
 							inUse = false;
 						}
-						snake.Add(newH);
+						snake.Add(newHead);
 						Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.SetCursorPosition(newH.X, newH.Y);
+                        Console.SetCursorPosition(newHead.X, newHead.Y);
                         Console.Write("@");
 						dir.lastDir = dir.newDir;
 					}
