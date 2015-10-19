@@ -18,51 +18,108 @@ namespace SnakeMess
 
 	class SnakeMain
 	{
-        static bool gameOver, pause, inUse;
-        static Direction dir;
-        static int boardWidth, boardHeight;
-        static List<Coord> snake;
-        static Random rand;
-        static Coord egg;
-        static Coord tail;
-        static Coord head;
-        static Coord newH;
+        private bool gameOver, pause, inUse;
+        private Direction dir;
+        private Snake snake;
+        private Random rand;
+        private Coord egg;
+        private Coord tail;
+        private Coord head;
+        private Coord newH;
+        private GameWindow window;
 
         /**
             function Init with the initialization of all the main variables
         */
         public void Init() 
         {
-            gameOver = false;
-            pause = false;
-            inUse = false;
+            pause = inUse = false;
             dir = new Direction();
-            dir.newDir = 2;
-            dir.lastDir = 2;
-            boardWidth = Console.WindowWidth;
-            boardHeight = Console.WindowHeight;
-            snake = new List<Coord>();
-            for(int i = 0; i<4; i++) {
-                snake.Add(new Coord(10, 10));
-            }
+            window = new GameWindow();
+            snake = new Snake();
 
-            Console.CursorVisible = false;
-            Console.Title = "Westerdals Oslo ACT - SNAKE";
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.SetCursorPosition(10, 10);
-            Console.Write("@");
+            window.setTitle("Westerdals Oslo ACT - SNAKE");
+           
             rand = new Random();
             egg = new Coord();
-            while (true) {
-                egg.X = rand.Next(0, boardWidth);
-                egg.Y = rand.Next(0, boardHeight);
+
+            addEgg();
+
+            Stopwatch t = new Stopwatch();
+            t.Start();
+            
+
+            
+            while (!gameOver)
+            {
+                dir.newDir = dir.getNewDir(gameOver, pause);
+                if (!pause)
+                {
+                    if (t.ElapsedMilliseconds < 100)
+                        continue;
+                    t.Restart();
+                    tail = new Coord(snake.getFirst());
+                    head = new Coord(snake.getLast());
+                    newH = new Coord(head);
+                    switch (dir.newDir)
+                    {
+                        case 0:
+                            newH.Y -= 1;
+                            break;
+                        case 1:
+                            newH.X += 1;
+                            break;
+                        case 2:
+                            newH.Y += 1;
+                            break;
+                        default:
+                            newH.X -= 1;
+                            break;
+                    }
+                    gameOver = death();
+                    if (!gameOver)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.SetCursorPosition(head.X, head.Y);
+                        Console.Write("0");
+                        if (!inUse)
+                        {
+                            Console.SetCursorPosition(tail.X, tail.Y);
+                            Console.Write(" ");
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.SetCursorPosition(egg.X, egg.Y);
+                            Console.Write("$");
+                            inUse = false;
+                        }
+                        snake.add(newH);
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.SetCursorPosition(newH.X, newH.Y);
+                        Console.Write("@");
+                        dir.lastDir = dir.newDir;
+                    }
+                }
+            }
+            
+        }
+
+        public void addEgg()
+        {
+            while (true)
+            {
+                egg.X = rand.Next(0, window.getBoardW());
+                egg.Y = rand.Next(0, window.getBoardH());
                 bool spot = true;
-                foreach (Coord i in snake)
-                    if (i.X == egg.X && i.Y == egg.Y) {
+                foreach (Coord i in snake.getSnake())
+                    if (i.X == egg.X && i.Y == egg.Y)
+                    {
                         spot = false;
                         break;
                     }
-                if (spot) {
+                if (spot)
+                {
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.SetCursorPosition(egg.X, egg.Y);
                     Console.Write("$");
@@ -71,19 +128,19 @@ namespace SnakeMess
             }
         }
         public bool death() {
-            if (newH.X < 0 || newH.X >= boardWidth)
+            if (newH.X < 0 || newH.X >= window.getBoardW())
                 return true;
-            else if (newH.Y < 0 || newH.Y >= boardHeight)
+            else if (newH.Y < 0 || newH.Y >= window.getBoardH())
                 return true;
             if (newH.X == egg.X && newH.Y == egg.Y) {
-                if (snake.Count + 1 >= boardWidth * boardHeight)
+                if (snake.getCount() + 1 >= window.getBoardW() * window.getBoardH())
                     // No more room to place eggs -- game over.
                     return true;
                 else {
                     while (true) {
-                        egg.X = rand.Next(0, boardWidth); egg.Y = rand.Next(0, boardHeight);
+                        egg.X = rand.Next(0, window.getBoardW()); egg.Y = rand.Next(0, window.getBoardH());
                         bool found = true;
-                        foreach (Coord i in snake)
+                        foreach (Coord i in snake.getSnake())
                             if (i.X == egg.X && i.Y == egg.Y) {
                                 found = false;
                                 break;
@@ -96,8 +153,8 @@ namespace SnakeMess
                 }
             }
             if (!inUse) {
-                snake.RemoveAt(0);
-                foreach (Coord x in snake) {
+                snake.remove();
+                foreach (Coord x in snake.getSnake()) {
                     if (x.X == newH.X && x.Y == newH.Y) {
                         // Death by accidental self-cannibalism.
                         return true;
@@ -106,59 +163,10 @@ namespace SnakeMess
             }
             return false;
         }
-        // Test
 		public static void Main(string[] arguments)
 		{
             SnakeMain snakemain = new SnakeMain();
             snakemain.Init();
-            //Variables 
-			Stopwatch t = new Stopwatch();
-			t.Start();
-			while (!gameOver) {
-                dir.newDir = dir.getNewDir(ref gameOver, ref pause);
-				if (!pause) {
-					if (t.ElapsedMilliseconds < 100)
-						continue;
-					t.Restart();
-					tail = new Coord(snake.First());
-					head = new Coord(snake.Last());
-					newH = new Coord(head);
-					switch (dir.newDir) {
-						case 0:
-							newH.Y -= 1;
-							break;
-						case 1:
-							newH.X += 1;
-							break;
-						case 2:
-							newH.Y += 1;
-							break;
-						default:
-							newH.X -= 1;
-							break;
-					}
-                    gameOver = snakemain.death();
-					if (!gameOver) {
-						Console.ForegroundColor = ConsoleColor.Yellow;
-						Console.SetCursorPosition(head.X, head.Y);
-                        Console.Write("0");
-						if (!inUse) {
-							Console.SetCursorPosition(tail.X, tail.Y);
-                            Console.Write(" ");
-						} else {
-							Console.ForegroundColor = ConsoleColor.Green;
-                            Console.SetCursorPosition(egg.X, egg.Y);
-                            Console.Write("$");
-							inUse = false;
-						}
-						snake.Add(newH);
-						Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.SetCursorPosition(newH.X, newH.Y);
-                        Console.Write("@");
-						dir.lastDir = dir.newDir;
-					}
-				}
-			}
 		}
 	}
 }

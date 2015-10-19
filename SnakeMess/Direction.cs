@@ -9,9 +9,10 @@ namespace SnakeMess
     {
         public ConsoleKeyInfo key;
         public short lastDir = 2;
-        public short newDir = 1;
+        public short newDir = 2;
 
-        public short getNewDir(ref bool gg, ref bool pause)
+
+        public short getNewDir(bool gg, bool pause)
         {
             if (Console.KeyAvailable)
             {
