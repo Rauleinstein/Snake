@@ -43,7 +43,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SnakeMess.cs" />
+    <Compile Include="Coord.cs" />
+    <Compile Include="Direction.cs" />
+    <Compile Include="GameWindow.cs" />
+    <Compile Include="Snake.cs" />
+    <Compile Include="SnakeMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
