@@ -10,17 +10,19 @@ namespace SnakeMess
         public ConsoleKeyInfo key;
         public short lastDir = 2;
         public short newDir = 2;
+        private bool gameOver = false;
+        private bool pause = false;
 
 
-        public short getNewDir(bool gg, bool pause)
+        public short getNewDir()
         {
             if (Console.KeyAvailable)
             {
                 key = Console.ReadKey(true);
                 if (key.Key == ConsoleKey.Escape)
-                    gg = true;
+                    gameOver = true;
                 else if (key.Key == ConsoleKey.Spacebar)
-                    pause = !pause;
+                    setPause();
                 else if (key.Key == ConsoleKey.UpArrow && lastDir != 2)
                     newDir = 0;
                 else if (key.Key == ConsoleKey.RightArrow && lastDir != 3)
@@ -31,6 +33,21 @@ namespace SnakeMess
                     newDir = 3;
             }
             return newDir;
+        }
+
+        public void setPause()
+        {
+            pause = !pause;
+        }
+
+        public bool getGameOver()
+        {
+            return gameOver;
+        }
+
+        public bool getPause()
+        {
+            return pause;
         }
     }
 }

@@ -12,11 +12,14 @@ namespace SnakeMess
         {
             snake = new List<Coord>();
             snake.Add(new Coord(10, 10)); snake.Add(new Coord(10, 10)); snake.Add(new Coord(10, 10)); snake.Add(new Coord(10, 10));
-            Console.ForegroundColor = ConsoleColor.Green; Console.SetCursorPosition(10, 10); Console.Write("@");
+            Console.SetCursorPosition(10, 10); Console.Write("@");
         }
 
         public void add(Coord newCoord)
         {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.SetCursorPosition(newCoord.X, newCoord.Y);
+            Console.Write("@");
             snake.Add(newCoord);
         }
 
